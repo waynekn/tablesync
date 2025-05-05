@@ -1,7 +1,9 @@
 import { useAuth } from "react-oidc-context";
+import { useNavigate } from "react-router";
 
 function AuthPage() {
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const signOutRedirect = () => {
     const clientId = import.meta.env.VITE_CLIENT_ID;
@@ -13,7 +15,7 @@ function AuthPage() {
   };
 
   if (auth.isAuthenticated) {
-    console.warn(auth.user?.profile);
+    navigate(`../profile/${auth.user?.profile.given_name}`);
   }
 
   if (auth.isLoading) {
@@ -28,7 +30,6 @@ function AuthPage() {
     return (
       <div>
         <p>Sucessfully authenticated</p>
-        {/* TODO: Redirect to profile page */}
       </div>
     );
   }
