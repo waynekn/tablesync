@@ -12,6 +12,7 @@
   "dependencies": {
     "@handsontable/react-wrapper": "^15.2.0",
     "@radix-ui/react-navigation-menu": "^1.2.10",
+    "@radix-ui/react-popover": "^1.1.12",
     "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/vite": "^4.0.15",
     "class-variance-authority": "^0.7.1",
