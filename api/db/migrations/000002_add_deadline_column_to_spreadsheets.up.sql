@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS spreadsheets
+ADD COLUMN deadline TIMESTAMP;

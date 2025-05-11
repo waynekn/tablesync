@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS spreadsheets
+DROP COLUMN IF EXISTS deadline;
