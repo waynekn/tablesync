@@ -1,0 +1,2 @@
+ALTER TABLE spreadsheets
+ALTER COLUMN deadline SET NOT NULL;
