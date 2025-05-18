@@ -11,9 +11,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-
-var DB *sql.DB
-
 // Connect establishes a connection to the PostgreSQL database using the
 // pgx driver. It retrieves the connection string from the DATABASE_URL
 // environment variable, verifies the connection with a ping, and returns
@@ -46,6 +43,5 @@ func Connect() (*sql.DB, error) {
 
 	slog.Info("Successfully connected to the database")
 
-	DB = db
 	return db, nil
 }
