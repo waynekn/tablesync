@@ -1,9 +1,20 @@
+import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
 import { useNavigate } from "react-router";
 
 function AuthPage() {
   const auth = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const redirectToProfile = async () => {
+      if (auth.isAuthenticated) {
+        await navigate(`../profile/${auth.user?.profile.given_name}`);
+      }
+    };
+
+    void redirectToProfile();
+  }, [auth.isAuthenticated, auth.user?.profile.given_name, navigate]);
 
   const signOutRedirect = () => {
     const clientId = import.meta.env.VITE_CLIENT_ID;
@@ -13,10 +24,6 @@ function AuthPage() {
       logoutUri
     )}`;
   };
-
-  if (auth.isAuthenticated) {
-    navigate(`../profile/${auth.user?.profile.given_name}`);
-  }
 
   if (auth.isLoading) {
     return <div>Loading...</div>;
