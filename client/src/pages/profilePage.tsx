@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import UserInfoCard from "@/components/cards/userInfo";
+import { Link } from "react-router";
 
 function ProfilePage() {
   return (
@@ -29,7 +30,14 @@ function ProfilePage() {
         </Popover>
 
         <section className="w-full max-w-3xl mx-auto border-2 border-gray-300 rounded-lg bg-white shadow-lg p-8 space-y-6">
-          <p>Main content</p>
+          <div>
+            <Link
+              to="../spreadsheet/create/"
+              className="text-black underline hover:text-gray-700"
+            >
+              Create spreadsheet
+            </Link>
+          </div>
           {/* TODO */}
         </section>
       </main>
