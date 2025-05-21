@@ -26,7 +26,7 @@ func main() {
 
 	defer conn.Close()
 
-	router := router.New()
+	router := router.New(conn)
 
 	router.Run("localhost:8000")
 }
