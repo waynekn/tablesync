@@ -8,7 +8,8 @@ import (
 )
 
 const base62Alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const idLength = 22
+// The max number of characters for the id column that the db allows
+const maxIdLength = 22
 
 // GenerateID generates a unique ID using UUID and encodes it in base62 format.
 func GenerateID() string {
@@ -30,8 +31,8 @@ func GenerateID() string {
 	// Reverse the string to get the correct order
 	id := reverseString(base62.String())
 
-	if len(id) > idLength {
-		return id[:idLength]
+	if len(id) > maxIdLength {
+		return id[:maxIdLength]
 	}
 
 	return id
