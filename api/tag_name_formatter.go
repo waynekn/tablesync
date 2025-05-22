@@ -15,8 +15,6 @@ import (
 // so that it returns the JSON field name (e.g., `title`) instead of the Go struct field name (e.g., `Title`).
 //
 // This improves the clarity of validation error messages when working with JSON APIs.
-//
-// It modifies the default validator behavior used by the Gin binding engine.
 func RegisterJSONTagNameFormatter() string {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
