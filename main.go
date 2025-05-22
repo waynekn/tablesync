@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/waynekn/tablesync/api"
 	"github.com/waynekn/tablesync/api/db"
 	"github.com/waynekn/tablesync/api/logging"
 	"github.com/waynekn/tablesync/api/router"
@@ -25,6 +26,8 @@ func main() {
 	}
 
 	defer conn.Close()
+
+	api.RegisterJSONTagNameFormatter()
 
 	router := router.New(conn)
 
