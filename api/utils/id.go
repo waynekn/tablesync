@@ -7,9 +7,11 @@ import (
 	"github.com/google/uuid"
 )
 
-const base62Alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-// The max number of characters for the id column that the db allows
-const maxIdLength = 22
+const (
+	base62Alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	// The max number of characters for the id column that the db allows
+	maxIdLength = 22
+)
 
 // GenerateID generates a unique ID using UUID and encodes it in base62 format.
 func GenerateID() string {
