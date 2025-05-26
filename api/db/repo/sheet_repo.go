@@ -9,6 +9,7 @@ import (
 
 type SpreadsheetRepo interface {
 	InsertSpreadsheet(sheet models.SpreadsheetInit, columns []byte, owner, id string) error
+	GetByOwner(owner string) (*[]models.Spreadsheet, error)
 }
 
 type spreadsheetRepo struct {
@@ -33,4 +34,38 @@ func (s *spreadsheetRepo) InsertSpreadsheet(sheet models.SpreadsheetInit, column
 		return err
 	}
 	return nil
+}
+
+// GetByOwner retrieves spreadsheets created by the `owner` from the db
+func (s *spreadsheetRepo) GetByOwner(owner string) (*[]models.Spreadsheet, error) {
+	rows, err := s.db.Query(`SELECT *
+		FROM spreadsheets WHERE owner = $1`,
+		owner)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			emptySlice := []models.Spreadsheet{}
+			return &emptySlice, nil
+		}
+		slog.Error("Failed to query spreadsheets", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	spreadsheets := make([]models.Spreadsheet, 0, 20)
+	for rows.Next() {
+		var sheet models.Spreadsheet
+		if err := rows.Scan(&sheet.ID, &sheet.Title, &sheet.Description, &sheet.Owner,
+			&sheet.CreatedAt, &sheet.UpdatedAt, &sheet.Data, &sheet.Deadline); err != nil {
+			slog.Error("Failed to scan spreadsheet row", "error", err)
+			return nil, err
+		}
+		spreadsheets = append(spreadsheets, sheet)
+	}
+
+	if err := rows.Err(); err != nil {
+		slog.Error("Error occurred during row iteration", "error", err)
+		return nil, err
+	}
+
+	return &spreadsheets, nil
 }
