@@ -91,3 +91,22 @@ func (h *SpreadsheetHandler) CreateSpreadsheetHandler(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Spreadsheet created successfully"})
 }
+
+// GetOwnSpreadsheetsHandler handles requests to retrieve spreadsheets owned by
+// the authenticated user.
+func (h *SpreadsheetHandler) GetOwnSpreadsheetsHandler(c *gin.Context) {
+	token, err := utils.TokenFromContext(c)
+	if err != nil {
+		slog.Error("Unauthorized request gained access to a protected endpoint", "error", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	spreadsheets, err := h.repo.GetByOwner(token.Subject())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "An unexpected error occurred while retrieving spreadsheets. Please try again later."})
+		return
+	}
+
+	c.JSON(http.StatusOK, spreadsheets)
+}
