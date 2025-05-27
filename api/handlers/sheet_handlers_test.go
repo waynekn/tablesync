@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 
 // setupTest initializes a Gin context and a response recorder for testing
 // It sets up a mock JWT token and prepares the request body with the provided data.
-func setupTest(data models.SpreadsheetInit) (*gin.Context, *httptest.ResponseRecorder) {
+func setupCreateSpreadsheetTestContext(data models.SpreadsheetInit) (*gin.Context, *httptest.ResponseRecorder) {
 	rec := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(rec)
 	token := jwt.New()
@@ -76,7 +76,7 @@ func TestCreateSpreadsheet(t *testing.T) {
 	}
 
 	t.Run("Should create spreadsheet successfully", func(t *testing.T) {
-		ctx, rec := setupTest(data)
+		ctx, rec := setupCreateSpreadsheetTestContext(data)
 		h.CreateSpreadsheetHandler(ctx)
 		assert.Equal(t, http.StatusCreated, rec.Code)
 	})
@@ -97,7 +97,7 @@ func TestCreateSpreadsheet(t *testing.T) {
 		t.Run("Should not create spreadsheet with "+tt.name, func(t *testing.T) {
 			input := data
 			tt.modify(&input)
-			ctx, rec := setupTest(input)
+			ctx, rec := setupCreateSpreadsheetTestContext(input)
 			h.CreateSpreadsheetHandler(ctx)
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
 
@@ -109,3 +109,4 @@ func TestCreateSpreadsheet(t *testing.T) {
 	}
 
 }
+
