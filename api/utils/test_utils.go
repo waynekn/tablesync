@@ -3,10 +3,29 @@ package utils
 import (
 	"database/sql"
 	"encoding/json"
+	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/waynekn/tablesync/api/models"
 )
+
+// CreateTestCtxWithToken creates a test Gin context with a JWT token.
+//
+// The function initializes a new Gin test context using the provided http.ResponseWriter.
+// It creates a JWT token with the subject set to "test-user" and stores the token in the
+// context under the "token" key. The returned context is suitable for testing handlers
+// that require a JWT token.
+func CreateTestCtxWithToken(rec http.ResponseWriter) *gin.Context {
+	ctx, _ := gin.CreateTestContext(rec)
+	token := jwt.New()
+	// set the sub field only as its the only one used by the handlers
+	// so far
+	token.Set("sub", "test-user")
+	ctx.Set("token", token)
+	return ctx
+}
 
 // InsertTestData inserts a sample spreadsheet record into the provided test database.
 //
