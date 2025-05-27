@@ -13,7 +13,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/waynekn/tablesync/api"
 	"github.com/waynekn/tablesync/api/db"
@@ -46,12 +45,7 @@ func TestMain(m *testing.M) {
 // It sets up a mock JWT token and prepares the request body with the provided data.
 func setupCreateSpreadsheetTestContext(data models.SpreadsheetInit) (*gin.Context, *httptest.ResponseRecorder) {
 	rec := httptest.NewRecorder()
-	ctx, _ := gin.CreateTestContext(rec)
-	token := jwt.New()
-	// set the sub field only as its the only one used by the handler
-	// in the test
-	token.Set("sub", "test-user")
-	ctx.Set("token", token)
+	ctx := utils.CreateTestCtxWithToken(rec)
 
 	var bodyReader *bytes.Reader
 
@@ -64,12 +58,7 @@ func setupCreateSpreadsheetTestContext(data models.SpreadsheetInit) (*gin.Contex
 
 func setUpGetOwnSpreadsheetCtx() (*gin.Context, *httptest.ResponseRecorder) {
 	rec := httptest.NewRecorder()
-	ctx, _ := gin.CreateTestContext(rec)
-	token := jwt.New()
-	// set the sub field only as its the only one used by the handler
-	// in the test
-	token.Set("sub", "test-user")
-	ctx.Set("token", token)
+	ctx := utils.CreateTestCtxWithToken(rec)
 
 	ctx.Request = httptest.NewRequest("GET", "/spreadsheets/", nil)
 	return ctx, rec
