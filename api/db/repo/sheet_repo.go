@@ -42,10 +42,6 @@ func (s *spreadsheetRepo) GetByOwner(owner string) (*[]models.Spreadsheet, error
 		FROM spreadsheets WHERE owner = $1`,
 		owner)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			emptySlice := []models.Spreadsheet{}
-			return &emptySlice, nil
-		}
 		slog.Error("Failed to query spreadsheets", "error", err)
 		return nil, err
 	}
