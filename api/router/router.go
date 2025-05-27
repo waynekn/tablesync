@@ -25,6 +25,7 @@ func New(db *sql.DB) *gin.Engine {
 	spreadsheetHandler := handlers.NewSpreadsheetHandler(spreadsheetRepo)
 
 	r.POST("spreadsheet/create/", middleware.RequireAuth(), spreadsheetHandler.CreateSpreadsheetHandler)
+	r.GET("spreadsheets/", middleware.RequireAuth(), spreadsheetHandler.GetOwnSpreadsheetsHandler)
 
 	r.SetTrustedProxies([]string{"127.0.0.1"})
 
