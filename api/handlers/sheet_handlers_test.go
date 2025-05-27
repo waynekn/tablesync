@@ -54,7 +54,7 @@ func setupTest(data models.SpreadsheetInit) (*gin.Context, *httptest.ResponseRec
 	jsonBytes, _ := json.Marshal(data)
 	bodyReader = bytes.NewReader(jsonBytes)
 
-	ctx.Request = httptest.NewRequest("POST", "/spreadsheets", bodyReader)
+	ctx.Request = httptest.NewRequest("POST", "/spreadsheet/create/", bodyReader)
 	return ctx, rec
 }
 
