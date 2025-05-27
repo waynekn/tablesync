@@ -19,6 +19,7 @@ import (
 	"github.com/waynekn/tablesync/api/db"
 	"github.com/waynekn/tablesync/api/db/repo"
 	"github.com/waynekn/tablesync/api/models"
+	"github.com/waynekn/tablesync/api/utils"
 )
 
 var testDb *sql.DB
@@ -34,6 +35,9 @@ func TestMain(m *testing.M) {
 	testDb = conn
 	gin.SetMode(gin.TestMode)
 	api.RegisterJSONTagNameFormatter()
+
+	utils.InsertTestData(testDb)
+
 	// Run the tests
 	m.Run()
 }
@@ -55,6 +59,19 @@ func setupCreateSpreadsheetTestContext(data models.SpreadsheetInit) (*gin.Contex
 	bodyReader = bytes.NewReader(jsonBytes)
 
 	ctx.Request = httptest.NewRequest("POST", "/spreadsheet/create/", bodyReader)
+	return ctx, rec
+}
+
+func setUpGetOwnSpreadsheetCtx() (*gin.Context, *httptest.ResponseRecorder) {
+	rec := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(rec)
+	token := jwt.New()
+	// set the sub field only as its the only one used by the handler
+	// in the test
+	token.Set("sub", "test-user")
+	ctx.Set("token", token)
+
+	ctx.Request = httptest.NewRequest("GET", "/spreadsheets/", nil)
 	return ctx, rec
 }
 
@@ -110,3 +127,48 @@ func TestCreateSpreadsheet(t *testing.T) {
 
 }
 
+func TestGetOwnSpreadsheetsHandler(t *testing.T) {
+	testRepo := repo.NewSpreadsheetRepo(testDb)
+	h := NewSpreadsheetHandler(testRepo)
+	t.Run("with valid token and existing sheets", func(t *testing.T) {
+		ctx, rec := setUpGetOwnSpreadsheetCtx()
+		h.GetOwnSpreadsheetsHandler(ctx)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		body := rec.Body.Bytes()
+		var result []models.Spreadsheet
+
+		err := json.Unmarshal(body, &result)
+		assert.NoError(t, err, "Failed to unmarshal response body")
+		assert.NotEmpty(t, result)
+		assert.IsType(t, models.Spreadsheet{}, result[0])
+	})
+
+	t.Run("with valid token but no sheets", func(t *testing.T) {
+		ctx, rec := setUpGetOwnSpreadsheetCtx()
+		// modify token and set the owner as an empty string as all sheets have owners
+		// to ensure it wont find a sheet
+		token, _ := utils.TokenFromContext(ctx)
+		token.Set("sub", "")
+
+		h.GetOwnSpreadsheetsHandler(ctx)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+
+		body := rec.Body.Bytes()
+		var result []models.Spreadsheet
+		err := json.Unmarshal(body, &result)
+
+		assert.NoError(t, err, "Failed to unmarshal response body")
+		assert.Len(t, result, 0)
+	})
+
+	t.Run("without token", func(t *testing.T) {
+		ctx, rec := setUpGetOwnSpreadsheetCtx()
+		// remove access token
+		ctx.Set("token", nil)
+		h.GetOwnSpreadsheetsHandler(ctx)
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	})
+}
