@@ -19,13 +19,18 @@ func New(db *sql.DB) *gin.Engine {
 
 	r.Use(cors.New(config))
 
-	// Set up the routes
 	// Initialize repositories with database connection
 	spreadsheetRepo := repo.NewSpreadsheetRepo(db)
 	spreadsheetHandler := handlers.NewSpreadsheetHandler(spreadsheetRepo)
 
+	wsRepo := repo.NewWsRepo(db)
+	wsHandler := handlers.NewWsHandler(wsRepo)
+
 	r.POST("spreadsheet/create/", middleware.RequireAuth(), spreadsheetHandler.CreateSpreadsheetHandler)
 	r.GET("spreadsheets/", middleware.RequireAuth(), spreadsheetHandler.GetOwnSpreadsheetsHandler)
+
+	// websocket routes
+	r.GET("ws/sheet/:sheetID/edit/", wsHandler.EditSessionHandler)
 
 	r.SetTrustedProxies([]string{"127.0.0.1"})
 
