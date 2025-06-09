@@ -3,12 +3,14 @@ package main
 import (
 	"log/slog"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/waynekn/tablesync/api"
 	"github.com/waynekn/tablesync/api/db"
 	"github.com/waynekn/tablesync/api/logging"
 	"github.com/waynekn/tablesync/api/router"
+	"github.com/waynekn/tablesync/core/rdb"
 )
 
 func main() {
@@ -26,6 +28,22 @@ func main() {
 	}
 
 	defer conn.Close()
+
+	redisAddr := os.Getenv("REDIS_ADDR")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	redisDB, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+
+	if err != nil {
+		slog.Error("Failed to convert REDIS_DB to int", "err", err)
+		os.Exit(1)
+	}
+
+	rdb, err := rdb.Connect(redisAddr, redisPassword, redisDB)
+	if err != nil {
+		slog.Error("Redis connection failed, shutting down", "addr", redisAddr, "err", err)
+		os.Exit(1)
+	}
+	defer rdb.Close()
 
 	api.RegisterJSONTagNameFormatter()
 
