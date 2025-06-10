@@ -47,7 +47,7 @@ func main() {
 
 	api.RegisterJSONTagNameFormatter()
 
-	router := router.New(conn)
+	router := router.New(conn, rdb)
 
 	router.Run("localhost:8000")
 }
