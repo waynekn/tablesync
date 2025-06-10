@@ -3,11 +3,36 @@ package middleware
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/waynekn/tablesync/core/rdb"
 )
+
+var testRdb *redis.Client
+
+func TestMain(m *testing.M) {
+	_ = godotenv.Load("../../.env.test")
+
+	redisAddr := os.Getenv("REDIS_ADDR")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	redisDB, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+
+	rdb, err := rdb.Connect(redisAddr, redisPassword, redisDB)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	testRdb = rdb
+
+	m.Run()
+}
 
 func TestAuthMiddleWare(t *testing.T) {
 	// Set up a test JWKS server
@@ -29,7 +54,7 @@ func TestAuthMiddleWare(t *testing.T) {
 
 	// Set up test router.
 	router := gin.Default()
-	router.GET("/protected", RequireAuth(), func(ctx *gin.Context) {
+	router.GET("/protected", RequireAuth(testRdb), func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{})
 	})
 
