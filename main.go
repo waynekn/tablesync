@@ -38,16 +38,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	rdb, err := rdb.Connect(redisAddr, redisPassword, redisDB)
+	redisClient, err := rdb.Connect(redisAddr, redisPassword, redisDB)
 	if err != nil {
 		slog.Error("Redis connection failed, shutting down", "addr", redisAddr, "err", err)
 		os.Exit(1)
 	}
-	defer rdb.Close()
+	defer redisClient.Close()
 
 	api.RegisterJSONTagNameFormatter()
 
-	router := router.New(conn, rdb)
+	router := router.New(conn, redisClient)
 
 	router.Run("localhost:8000")
 }

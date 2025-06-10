@@ -23,13 +23,13 @@ func TestMain(m *testing.M) {
 	redisPassword := os.Getenv("REDIS_PASSWORD")
 	redisDB, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
 
-	rdb, err := rdb.Connect(redisAddr, redisPassword, redisDB)
+	redisClient, err := rdb.Connect(redisAddr, redisPassword, redisDB)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	testRdb = rdb
+	testRdb = redisClient
 
 	m.Run()
 }
