@@ -11,29 +11,60 @@ import (
 	"github.com/waynekn/tablesync/api/middleware"
 )
 
-// New registers the routes and returns the router.
-func New(db *sql.DB, rdb *redis.Client) *gin.Engine {
+// Router holds dependencies and the Gin engine
+type Router struct {
+	engine *gin.Engine
+	db     *sql.DB
+	redis  *redis.Client
+}
+
+// New creates a new router with dependencies
+func New(db *sql.DB, redis *redis.Client) *Router {
 	r := gin.Default()
+	r.SetTrustedProxies([]string{"127.0.0.1"})
+	router := Router{
+		engine: r,
+		db:     db,
+		redis:  redis,
+	}
+	router.setupMiddleware()
+	router.registerRoutes()
+	return &router
+}
+
+// SetupMiddleware configures CORS and other middleware
+func (r *Router) setupMiddleware() {
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://localhost:5173"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	r.engine.Use(cors.New(config))
+}
 
-	r.Use(cors.New(config))
+// RegisterRoutes sets up all application routes
+func (r *Router) registerRoutes() {
+	// Initialize repositories
+	spreadsheetRepo := repo.NewSpreadsheetRepo(r.db)
+	wsRepo := repo.NewWsRepo(r.db)
 
-	// Initialize repositories with database connection
-	spreadsheetRepo := repo.NewSpreadsheetRepo(db)
+	// Initialize handlers
 	spreadsheetHandler := handlers.NewSpreadsheetHandler(spreadsheetRepo)
-
-	wsRepo := repo.NewWsRepo(db)
 	wsHandler := handlers.NewWsHandler(wsRepo)
 
-	r.POST("spreadsheet/create/", middleware.RequireAuth(rdb), spreadsheetHandler.CreateSpreadsheetHandler)
-	r.GET("spreadsheets/", middleware.RequireAuth(rdb), spreadsheetHandler.GetOwnSpreadsheetsHandler)
+	// Register routes
+	r.registerSpreadsheetRoutes(spreadsheetHandler)
+	r.registerWebSocketRoutes(wsHandler)
+}
 
-	// websocket routes
-	r.GET("ws/sheet/:sheetID/edit/", wsHandler.EditSessionHandler)
+func (r *Router) registerSpreadsheetRoutes(h *handlers.SpreadsheetHandler) {
+	r.engine.POST("spreadsheet/create/", middleware.RequireAuth(r.redis), h.CreateSpreadsheetHandler)
+	r.engine.GET("spreadsheets/", middleware.RequireAuth(r.redis), h.GetOwnSpreadsheetsHandler)
+}
 
-	r.SetTrustedProxies([]string{"127.0.0.1"})
+func (r *Router) registerWebSocketRoutes(h *handlers.WsHandler) {
+	r.engine.GET("ws/sheet/:sheetID/edit/", h.EditSessionHandler)
+}
 
-	return r
+// Run starts the server
+func (r *Router) Run(addr string) error {
+	return r.engine.Run(addr)
 }
