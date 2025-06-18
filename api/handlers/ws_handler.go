@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/waynekn/tablesync/api/db/repo"
 	"github.com/waynekn/tablesync/api/models"
+	"github.com/waynekn/tablesync/core/collab"
 )
 
 var upgrader = websocket.Upgrader{
@@ -21,12 +22,13 @@ var upgrader = websocket.Upgrader{
 }
 
 type WsHandler struct {
-	repo repo.WsRepo
+	repo   repo.WsRepo
+	collab *collab.Store
 }
 
-// NewWsHandler creates a new instance of WsHandler with the provided repository.
-func NewWsHandler(repo repo.WsRepo) *WsHandler {
-	return &WsHandler{repo: repo}
+// NewWsHandler creates a new instance of WsHandler with the provided repository and collaboration store.
+func NewWsHandler(repo repo.WsRepo, collabStore *collab.Store) *WsHandler {
+	return &WsHandler{repo: repo, collab: collabStore}
 }
 
 // EditSessionHandler initializes WebSocket connections for editing a spreadsheet.
