@@ -9,6 +9,7 @@ import (
 	"github.com/waynekn/tablesync/api/db/repo"
 	"github.com/waynekn/tablesync/api/handlers"
 	"github.com/waynekn/tablesync/api/middleware"
+	"github.com/waynekn/tablesync/core/collab"
 )
 
 // Router holds dependencies and the Gin engine
@@ -42,13 +43,15 @@ func (r *Router) setupMiddleware() {
 
 // RegisterRoutes sets up all application routes
 func (r *Router) registerRoutes() {
+	rdbStore := collab.NewStore(r.redis)
+
 	// Initialize repositories
 	spreadsheetRepo := repo.NewSpreadsheetRepo(r.db)
 	wsRepo := repo.NewWsRepo(r.db)
 
 	// Initialize handlers
 	spreadsheetHandler := handlers.NewSpreadsheetHandler(spreadsheetRepo)
-	wsHandler := handlers.NewWsHandler(wsRepo)
+	wsHandler := handlers.NewWsHandler(wsRepo, rdbStore)
 
 	// Register routes
 	r.registerSpreadsheetRoutes(spreadsheetHandler)
