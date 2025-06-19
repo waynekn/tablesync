@@ -27,6 +27,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err.Error())
 	}
+	defer redisClient.Close()
 
 	testStore = NewStore(redisClient)
 
