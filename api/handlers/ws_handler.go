@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"time"
@@ -60,5 +61,32 @@ func (h *WsHandler) EditSessionHandler(c *gin.Context) {
 		conn.WriteJSON(models.NewWsErrMsg("The deadline to edit this sheet has passed."))
 		conn.Close()
 		return
+	}
+
+	exists, err := h.collab.SheetExists(sheetID)
+
+	if err != nil {
+		conn.WriteJSON(models.NewWsErrMsg("An error occurred during initialization. Please try again later."))
+		conn.Close()
+		return
+	}
+
+	if !exists {
+		var sheetData [][]string
+		err = json.Unmarshal(sheet.Data, &sheetData)
+		if err != nil {
+			slog.Error("error unmarshalling sheet data", "err", err)
+			conn.WriteJSON(models.NewWsErrMsg("Could not process sheet data. Please try again in a while"))
+			conn.Close()
+			return
+		}
+
+		err = h.collab.InitRedisSheet(sheetID, sheet.Deadline, &sheetData)
+		if err != nil {
+			slog.Error("error initializing redis sheet", "err", err)
+			conn.WriteJSON(models.NewWsErrMsg("Could not initialize collaborative session."))
+			conn.Close()
+			return
+		}
 	}
 }
