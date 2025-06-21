@@ -44,7 +44,7 @@ func (r *Router) setupMiddleware() {
 
 // RegisterRoutes sets up all application routes
 func (r *Router) registerRoutes() {
-	rdbStore := collab.NewStore(r.redis)
+	collabStore := collab.NewStore(r.redis)
 	hub := ws.NewHub()
 
 	// Initialize repositories
@@ -53,7 +53,7 @@ func (r *Router) registerRoutes() {
 
 	// Initialize handlers
 	spreadsheetHandler := handlers.NewSpreadsheetHandler(spreadsheetRepo)
-	wsHandler := handlers.NewWsHandler(wsRepo, rdbStore, hub)
+	wsHandler := handlers.NewWsHandler(wsRepo, collabStore, hub)
 
 	// Register routes
 	r.registerSpreadsheetRoutes(spreadsheetHandler)
