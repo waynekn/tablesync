@@ -12,6 +12,7 @@ import (
 	"github.com/waynekn/tablesync/api/db/repo"
 	"github.com/waynekn/tablesync/api/models"
 	"github.com/waynekn/tablesync/core/collab"
+	"github.com/waynekn/tablesync/core/ws"
 )
 
 var upgrader = websocket.Upgrader{
@@ -25,11 +26,12 @@ var upgrader = websocket.Upgrader{
 type WsHandler struct {
 	repo   repo.WsRepo
 	collab *collab.Store
+	hub    *ws.Hub
 }
 
 // NewWsHandler creates a new instance of WsHandler with the provided repository and collaboration store.
-func NewWsHandler(repo repo.WsRepo, collabStore *collab.Store) *WsHandler {
-	return &WsHandler{repo: repo, collab: collabStore}
+func NewWsHandler(repo repo.WsRepo, collabStore *collab.Store, hub *ws.Hub) *WsHandler {
+	return &WsHandler{repo: repo, collab: collabStore, hub: hub}
 }
 
 // EditSessionHandler initializes WebSocket connections for editing a spreadsheet.
@@ -89,4 +91,7 @@ func (h *WsHandler) EditSessionHandler(c *gin.Context) {
 			return
 		}
 	}
+
+	client := ws.NewClient(sheetID, conn)
+	h.hub.Register <- client
 }
