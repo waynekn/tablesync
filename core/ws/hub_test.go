@@ -13,7 +13,7 @@ func TestRun(t *testing.T) {
 	hub := NewHub()
 
 	client := &Client{
-		Conn:    &websocket.Conn{}, 
+		Conn:    &websocket.Conn{},
 		SheetID: "test-sheet",
 		Send:    make(chan []byte, 1),
 	}
@@ -43,7 +43,7 @@ func TestRun(t *testing.T) {
 	}()
 
 	// Wait for the unregister operation
-	time.Sleep(50 * time.Millisecond) 
+	time.Sleep(50 * time.Millisecond)
 
 	// Check if the client is unregistered
 	assert.Equal(t, 0, len(hub.Clients[client.SheetID]),
