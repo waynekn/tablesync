@@ -12,7 +12,7 @@ func NewHub() *Hub {
 		Clients:    make(map[string][]*Client),
 		Register:   make(chan *Client, 100),
 		Unregister: make(chan *Client, 100),
-		Broadcast:  make(chan []byte, 100),
+		Broadcast:  make(chan BroadCastMsg, 100),
 	}
 	go hub.run()
 	return hub

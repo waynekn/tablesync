@@ -16,7 +16,7 @@ type Hub struct {
 	Clients    map[string][]*Client // map[sheetID]clients
 	Register   chan *Client
 	Unregister chan *Client
-	Broadcast  chan []byte
+	Broadcast  chan BroadCastMsg
 }
 
 // EditMsg carries the details of a spreadsheet cell edit
