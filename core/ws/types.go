@@ -18,3 +18,11 @@ type Hub struct {
 	Unregister chan *Client
 	Broadcast  chan []byte
 }
+
+// EditMsg carries the details of a spreadsheet cell edit
+// made by a client, for broadcast to other collaborators.
+type EditMsg struct {
+	Row  int    `json:"row"`
+	Col  int    `json:"col"`
+	Data string `json:"data"`
+}
