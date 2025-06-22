@@ -35,9 +35,16 @@ func (h *Hub) run() {
 			case client := <-h.Register:
 				h.Clients[client.SheetID] = append(h.Clients[client.SheetID], client)
 			case client := <-h.Unregister:
+				i := 0
 				h.Clients[client.SheetID] = slices.DeleteFunc(h.Clients[client.SheetID], func(c *Client) bool {
+					i++
 					return c == client
 				})
+
+				// if the sheet only had one client and they have been unregistred, delete the empty key
+				if i == 1 {
+					delete(h.Clients, client.SheetID)
+				}
 			}
 		}()
 	}
