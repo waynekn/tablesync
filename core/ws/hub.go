@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"log/slog"
+	"runtime/debug"
 	"slices"
 )
 
@@ -22,13 +24,21 @@ func NewHub() *Hub {
 // unregistration, and broadcast messages.
 func (h *Hub) run() {
 	for {
-		select {
-		case client := <-h.Register:
-			h.Clients[client.SheetID] = append(h.Clients[client.SheetID], client)
-		case client := <-h.Unregister:
-			h.Clients[client.SheetID] = slices.DeleteFunc(h.Clients[client.SheetID], func(c *Client) bool {
-				return c == client
-			})
-		}
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					slog.Error("Hub run recovered from panic", "err", r, "stack", string(debug.Stack()))
+				}
+			}()
+
+			select {
+			case client := <-h.Register:
+				h.Clients[client.SheetID] = append(h.Clients[client.SheetID], client)
+			case client := <-h.Unregister:
+				h.Clients[client.SheetID] = slices.DeleteFunc(h.Clients[client.SheetID], func(c *Client) bool {
+					return c == client
+				})
+			}
+		}()
 	}
 }
