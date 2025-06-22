@@ -49,5 +49,9 @@ func TestRun(t *testing.T) {
 	assert.Equal(t, 0, len(hub.Clients[client.SheetID]),
 		"After unregistering the client, the client count for SheetID '%s' should be 0", client.SheetID)
 
+	// check that the now sheet has been removed
+	_, exists := hub.Clients[client.SheetID]
+	assert.False(t, exists, "Expected sheetID %q to be removed after last client unregistered", client.SheetID)
+
 	wg.Wait()
 }
