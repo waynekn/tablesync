@@ -1,12 +1,17 @@
 package ws
 
-import "github.com/gorilla/websocket"
+import (
+	"github.com/gorilla/websocket"
+	"github.com/waynekn/tablesync/core/collab"
+)
 
 // Client represents a websocket connection to a spreadsheet.
 type Client struct {
-	Conn    *websocket.Conn
-	SheetID string
-	Send    chan []byte
+	Conn        *websocket.Conn
+	SheetID     string
+	Send        chan []byte
+	collabStore *collab.Store
+	hub         *Hub
 }
 
 // Hub is a long-running in-memory struct that keeps track of all
