@@ -92,6 +92,6 @@ func (h *WsHandler) EditSessionHandler(c *gin.Context) {
 		}
 	}
 
-	client := ws.NewClient(sheetID, conn)
+	client := ws.NewClient(sheetID, conn, h.collab, h.hub)
 	h.hub.Register <- client
 }
