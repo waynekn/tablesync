@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"runtime/debug"
 	"slices"
+
+	"github.com/waynekn/tablesync/core/collab"
 )
 
 // NewHub creates and returns a new Hub instance.
@@ -14,7 +16,7 @@ func NewHub() *Hub {
 		Clients:    make(map[string][]*Client),
 		Register:   make(chan *Client, 100),
 		Unregister: make(chan *Client, 100),
-		Broadcast:  make(chan BroadCastMsg, 100),
+		Broadcast:  make(chan collab.BroadCastMsg, 100),
 	}
 	go hub.run()
 	return hub
