@@ -100,3 +100,37 @@ func TestInitRedisSheet(t *testing.T) {
 		assert.Equal(t, v, result[k], "value mismatch for cell %s", k)
 	}
 }
+
+func TestApplyEdit(t *testing.T) {
+	sheetID := utils.GenerateID()
+	sheetDeadline := time.Now().Add(10 * time.Minute)
+	sheetData := &[][]string{
+		{"A1", "B1"},
+		{"A2", "B2"},
+	}
+
+	err := testStore.InitRedisSheet(sheetID, sheetDeadline, sheetData)
+	assert.NoError(t, err, "should not return an error when initializing a sheet")
+
+	edit := EditMsg{
+		Row:  1,
+		Col:  0,
+		Data: "C1",
+	}
+
+	err = testStore.ApplyEdit(sheetID, edit)
+	assert.NoError(t, err, "should not return an error when applying an edit")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	result, err := testStore.rdb.HGet(ctx, sheetID, "1:0").Result()
+	assert.NoError(t, err)
+	assert.Equal(t, "C1", result, "should update the cell value correctly")
+
+	// should not allow edits to the first row (column headers)
+	edit.Row = 0
+	err = testStore.ApplyEdit(sheetID, edit)
+	assert.Error(t, err, "should return an error when trying to edit the first row (column headers)")
+	assert.Equal(t, "cannot edit column headers", err.Error(), "should return the correct error message")
+}
