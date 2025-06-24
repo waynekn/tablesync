@@ -2,6 +2,7 @@ package collab
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -66,6 +67,30 @@ func (s *Store) InitRedisSheet(sheetID string, sheetDeadline time.Time, sheetDat
 	if err != nil {
 		slog.Error("failed to initialize sheet in redis", "err", err)
 		return fmt.Errorf("could not initialize sheet in redis: %w", err)
+	}
+
+	return nil
+}
+
+// ApplyEdit applies an edit to a specific cell in the collaborative editing session identified by sheetID.
+// It updates the cell at the specified row and column with the provided data.
+// If the row is 0, it returns an error since the first row contains column headers
+// and should not be edited.
+func (s *Store) ApplyEdit(sheetID string, edit EditMsg) error {
+	if edit.Row == 0 {
+		// the first row contains column headers, so don't allow edits to it
+		return errors.New("cannot edit column headers")
+	}
+
+	key := fmt.Sprintf("%d:%d", edit.Row, edit.Col)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	err := s.rdb.HSet(ctx, sheetID, key, edit.Data).Err()
+	if err != nil {
+		slog.Error("failed to apply edit", "err", err)
+		return err
 	}
 
 	return nil
