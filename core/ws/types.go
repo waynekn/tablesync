@@ -9,7 +9,7 @@ import (
 type Client struct {
 	Conn        *websocket.Conn
 	SheetID     string
-	Send        chan []byte
+	Send        chan collab.EditMsg
 	collabStore *collab.Store
 	hub         *Hub
 }
