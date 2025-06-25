@@ -10,7 +10,7 @@ func NewClient(sheetID string, conn *websocket.Conn, collabStore *collab.Store, 
 	return &Client{
 		Conn:        conn,
 		SheetID:     sheetID,
-		Send:        make(chan []byte, 50),
+		Send:        make(chan collab.EditMsg, 50),
 		collabStore: collabStore,
 		hub:         hub,
 	}
