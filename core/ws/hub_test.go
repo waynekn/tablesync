@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"github.com/waynekn/tablesync/core/collab"
 )
 
 func TestRun(t *testing.T) {
@@ -15,7 +16,7 @@ func TestRun(t *testing.T) {
 	client := &Client{
 		Conn:    &websocket.Conn{},
 		SheetID: "test-sheet",
-		Send:    make(chan []byte, 1),
+		Send:    make(chan collab.EditMsg, 1),
 	}
 
 	var wg sync.WaitGroup
