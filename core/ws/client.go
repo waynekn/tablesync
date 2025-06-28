@@ -10,6 +10,17 @@ import (
 	"github.com/waynekn/tablesync/core/collab"
 )
 
+// Client represents a websocket connection to a spreadsheet.
+type Client struct {
+	Conn        *websocket.Conn
+	SheetID     string
+	Send        chan collab.EditMsg
+	collabStore *collab.Store
+	hub         *Hub
+	done        chan struct{}
+	closeOnce   sync.Once
+}
+
 // NewClient instantiates and returns a new Client
 func NewClient(sheetID string, conn *websocket.Conn, collabStore *collab.Store, hub *Hub) *Client {
 	return &Client{
