@@ -1,7 +1,10 @@
 package ws
 
 import (
+	"log/slog"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/waynekn/tablesync/core/collab"
@@ -18,4 +21,22 @@ func NewClient(sheetID string, conn *websocket.Conn, collabStore *collab.Store, 
 		done:        make(chan struct{}),
 		closeOnce:   sync.Once{},
 	}
+}
+
+// Close gracefully closes the websocket connection.
+// It sends a close message with an optional reason and ensures that the connection is closed only once
+func (c *Client) Close(reason string) {
+	c.closeOnce.Do(func() {
+		close(c.done)
+
+		if strings.TrimSpace(reason) != "" {
+			cm := websocket.FormatCloseMessage(websocket.CloseNormalClosure, reason)
+			err := c.Conn.WriteControl(websocket.CloseMessage, cm, time.Now().Add(time.Second))
+			if err != nil {
+				slog.Error("failed to send close message", "err", err)
+			}
+		}
+
+		c.Conn.Close()
+	})
 }
