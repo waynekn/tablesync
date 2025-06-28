@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"sync"
+
 	"github.com/gorilla/websocket"
 	"github.com/waynekn/tablesync/core/collab"
 )
@@ -13,5 +15,7 @@ func NewClient(sheetID string, conn *websocket.Conn, collabStore *collab.Store, 
 		Send:        make(chan collab.EditMsg, 50),
 		collabStore: collabStore,
 		hub:         hub,
+		done:        make(chan struct{}),
+		closeOnce:   sync.Once{},
 	}
 }
