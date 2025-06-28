@@ -95,3 +95,17 @@ func (s *Store) ApplyEdit(sheetID string, edit EditMsg) error {
 
 	return nil
 }
+
+// GetRedisSheetData retrieves all the data for a specific sheet from Redis.
+func (s *Store) GetRedisSheetData(sheetID string) (map[string]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	redisData, err := s.rdb.HGetAll(ctx, sheetID).Result()
+	if err != nil {
+		slog.Error("unable to get redis sheet data", "err", err)
+		return nil, err
+	}
+
+	return redisData, nil
+}
