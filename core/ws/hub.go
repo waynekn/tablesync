@@ -8,6 +8,16 @@ import (
 	"github.com/waynekn/tablesync/core/collab"
 )
 
+// Hub is a long-running in-memory struct that keeps track of all
+// websocket clients currently connected. It handles broadcasting a message
+// to all clients on the same sheetID
+type Hub struct {
+	Clients    map[string][]*Client // map[sheetID]clients
+	Register   chan *Client
+	Unregister chan *Client
+	Broadcast  chan collab.BroadCastMsg
+}
+
 // NewHub creates and returns a new Hub instance.
 // The Hub manages websocket clients, allowing them to register, unregister,
 // and broadcast messages to all clients connected to the same sheetID.
