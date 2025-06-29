@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/waynekn/tablesync/api/db/repo"
-	"github.com/waynekn/tablesync/api/models"
 	"github.com/waynekn/tablesync/core/collab"
 	"github.com/waynekn/tablesync/core/ws"
 )
@@ -49,27 +48,24 @@ func (h *WsHandler) EditSessionHandler(c *gin.Context) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			conn.WriteJSON(models.NewWsErrMsg("The sheet you're trying to edit does not exist."))
+			closeWsConn("The sheet you're trying to edit does not exist.", conn)
 		} else {
-			conn.WriteJSON(models.NewWsErrMsg("An unexpected error occurred while connecting. Please try again later."))
+			closeWsConn("An unexpected error occurred while connecting. Please try again later.", conn)
 		}
-		conn.Close()
 		return
 	}
 
 	now := time.Now().UTC()
 
 	if now.After(sheet.Deadline) {
-		conn.WriteJSON(models.NewWsErrMsg("The deadline to edit this sheet has passed."))
-		conn.Close()
+		closeWsConn("The deadline to edit this sheet has passed.", conn)
 		return
 	}
 
 	exists, err := h.collab.SheetExists(sheetID)
 
 	if err != nil {
-		conn.WriteJSON(models.NewWsErrMsg("An error occurred during initialization. Please try again later."))
-		conn.Close()
+		closeWsConn("An error occurred during initialization. Please try again later.", conn)
 		return
 	}
 
@@ -78,20 +74,32 @@ func (h *WsHandler) EditSessionHandler(c *gin.Context) {
 		err = json.Unmarshal(sheet.Data, &sheetData)
 		if err != nil {
 			slog.Error("error unmarshalling sheet data", "err", err)
-			conn.WriteJSON(models.NewWsErrMsg("Could not process sheet data. Please try again in a while"))
-			conn.Close()
+			closeWsConn("Could not process sheet data. Please try again in a while", conn)
 			return
 		}
 
 		err = h.collab.InitRedisSheet(sheetID, sheet.Deadline, &sheetData)
 		if err != nil {
 			slog.Error("error initializing redis sheet", "err", err)
-			conn.WriteJSON(models.NewWsErrMsg("Could not initialize collaborative session."))
-			conn.Close()
+			closeWsConn("Could not initialize collaborative session.", conn)
 			return
 		}
 	}
 
 	client := ws.NewClient(sheetID, conn, h.collab, h.hub)
 	h.hub.Register <- client
+}
+
+// closeWsConn closes the WebSocket connection with the provided reason.
+// This function is used to properly close an existing WebSocket connection
+// before a new ws.Client instance is created, which has its own Close method.
+// The connection is closed by sending a close message with the provided reason
+// and a controlled close timeout.
+func closeWsConn(reason string, conn *websocket.Conn) {
+	cm := websocket.FormatCloseMessage(websocket.CloseNormalClosure, reason)
+	err := conn.WriteControl(websocket.CloseMessage, cm, time.Now().Add(time.Second))
+	if err != nil {
+		slog.Error("failed to send close message", "err", err)
+	}
+	conn.Close()
 }
