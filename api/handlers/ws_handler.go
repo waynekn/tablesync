@@ -69,15 +69,15 @@ func (h *WsHandler) EditSessionHandler(c *gin.Context) {
 		return
 	}
 
-	if !exists {
-		var sheetData [][]string
-		err = json.Unmarshal(sheet.Data, &sheetData)
-		if err != nil {
-			slog.Error("error unmarshalling sheet data", "err", err)
-			closeWsConn("Could not process sheet data. Please try again in a while", conn)
-			return
-		}
+	var sheetData [][]string
+	err = json.Unmarshal(sheet.Data, &sheetData)
+	if err != nil {
+		slog.Error("error unmarshalling sheet data", "err", err)
+		closeWsConn("Could not process sheet data. Please try again in a while", conn)
+		return
+	}
 
+	if !exists {
 		err = h.collab.InitRedisSheet(sheetID, sheet.Deadline, &sheetData)
 		if err != nil {
 			slog.Error("error initializing redis sheet", "err", err)
@@ -86,7 +86,8 @@ func (h *WsHandler) EditSessionHandler(c *gin.Context) {
 		}
 	}
 
-	client := ws.NewClient(sheetID, conn, h.collab, h.hub)
+	cols := sheetData[0]
+	client := ws.NewClient(sheetID, len(cols), conn, h.collab, h.hub)
 	h.hub.Register <- client
 }
 
