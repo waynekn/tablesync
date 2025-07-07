@@ -57,6 +57,12 @@ func (h *Hub) run() {
 				if i == 1 {
 					delete(h.Clients, client.SheetID)
 				}
+			case broadcast := <-h.Broadcast:
+				if clients, ok := h.Clients[broadcast.SheetID]; ok {
+					for _, client := range clients {
+						client.Send <- broadcast.Msg
+					}
+				}
 			}
 		}()
 	}
