@@ -60,7 +60,7 @@ func (h *Hub) run() {
 			case broadcast := <-h.Broadcast:
 				if clients, ok := h.Clients[broadcast.SheetID]; ok {
 					for _, client := range clients {
-						client.Send <- broadcast.Msg
+						client.Send <- broadcast.Edit
 					}
 				}
 			}

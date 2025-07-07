@@ -10,9 +10,9 @@ type EditMsg struct {
 
 // BroadCastMsg represents a message to be broadcasted to sheet collaborators.
 // It has a SheetID field to identify the sheet whose clients should receive the
-// message and a Msg field, which is an EditMsg, holding the data that will be
+// message and an Edit field, which is an EditMsg, holding the edit that will be
 // broadcasted.
 type BroadCastMsg struct {
 	SheetID string
-	Msg     EditMsg
+	Edit    EditMsg
 }
