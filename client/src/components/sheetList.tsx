@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 import { Spreadsheet } from "@/types/spreadsheet";
 
 type SheetListProps = {
@@ -15,7 +17,7 @@ export default function SheetList({ sheets }: SheetListProps) {
       <ol className="list-decimal list-inside space-y-2 text-gray-700">
         {sheets.map((sheet) => (
           <li key={sheet.id} className="pl-2">
-            {sheet.title}
+            <Link to={`../sheet/${sheet.id}/edit/`}>{sheet.title}</Link>
           </li>
         ))}
       </ol>
